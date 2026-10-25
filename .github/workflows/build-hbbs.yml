@@ -1,0 +1,25 @@
+name: hbbs Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-hbbs:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build hbbs
+        run: cargo build --release --bin hbbs
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hbbs-linux-x64
+          path: target/release/hbbs
