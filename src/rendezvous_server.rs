@@ -104,6 +104,8 @@ impl RendezvousServer {
         let nat_port = port - 1;
         let ws_port = port + 2;
         let pm = PeerMap::new().await?;
+        // Custom: loopback status API for the admin page (port+4, default 21120)
+        crate::status_api::start(pm.clone(), (port + 4) as u16).await;
         log::info!("serial={}", serial);
         let rendezvous_servers = get_servers(&get_arg("rendezvous-servers"), "rendezvous-servers");
         log::info!("Listening on tcp/udp :{}", port);

@@ -173,6 +173,17 @@ impl PeerMap {
         self.map.read().await.get(id).cloned()
     }
 
+    // Custom: snapshot for the loopback status API (hbbs admin page)
+    #[inline]
+    pub(crate) async fn ids_and_peers(&self) -> Vec<(String, LockPeer)> {
+        self.map
+            .read()
+            .await
+            .iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect()
+    }
+
     #[inline]
     pub(crate) async fn is_in_memory(&self, id: &str) -> bool {
         self.map.read().await.contains_key(id)
