@@ -22,9 +22,6 @@ pub const IP_CHANGE_DUR: u64 = 180;
 pub const IP_CHANGE_DUR_X2: u64 = IP_CHANGE_DUR * 2;
 pub const DAY_SECONDS: u64 = 3600 * 24;
 pub const IP_BLOCK_DUR: u64 = 60;
-// Same bound as the Pro server: a longer id is not a normal RustDesk id or hostname,
-// and every peer entry and punch-request record keeps its own copy.
-pub const MAX_PEER_ID_LEN: usize = 253;
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub(crate) struct PeerInfo {
@@ -70,7 +67,7 @@ pub(crate) struct PeerMap {
 
 impl PeerMap {
     pub(crate) async fn new() -> ResultType<Self> {
-        let db = get_arg_opt("DB_URL").unwrap_or_else(|| {
+        let db = std::env::var("DB_URL").unwrap_or({
             let mut db = "db_v2.sqlite3".to_owned();
             #[cfg(all(windows, not(debug_assertions)))]
             {
@@ -174,6 +171,17 @@ impl PeerMap {
     #[inline]
     pub(crate) async fn get_in_memory(&self, id: &str) -> Option<LockPeer> {
         self.map.read().await.get(id).cloned()
+    }
+
+    // Custom: snapshot for the loopback status API (hbbs admin page)
+    #[inline]
+    pub(crate) async fn ids_and_peers(&self) -> Vec<(String, LockPeer)> {
+        self.map
+            .read()
+            .await
+            .iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect()
     }
 
     #[inline]
